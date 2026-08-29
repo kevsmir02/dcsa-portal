@@ -85,7 +85,11 @@ export default function StudentForm({ student, sections, currentSectionId }: Pro
 
             <PageHeader
                 title={editing ? 'Edit Student' : 'Add Student'}
-                description={editing ? 'Update the learner record.' : 'Register a new Grade 12 learner. A portal login is created automatically.'}
+                description={
+                    editing
+                        ? 'Update the learner record.'
+                        : 'Register a new Grade 12 learner. A portal login is created automatically, with a one-time password shown once after saving.'
+                }
             />
 
             <form onSubmit={submit} className="grid gap-4 lg:grid-cols-3">

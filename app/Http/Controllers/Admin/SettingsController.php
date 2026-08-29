@@ -9,6 +9,7 @@ use App\Models\SchoolYear;
 use App\Models\Semester;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\TemporaryPassword;
 use App\Support\TransmutationTable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -104,11 +105,12 @@ class SettingsController extends Controller
 
     public function resetPassword(User $user): RedirectResponse
     {
-        $user->update(['password' => Hash::make('password')]);
+        $temporaryPassword = TemporaryPassword::generate();
+        $user->update(['password' => Hash::make($temporaryPassword)]);
 
         ActivityLog::record('user.password_reset', "Password reset for {$user->name}", $user);
 
-        return back()->with('success', "{$user->name}'s password has been reset to \"password\".");
+        return back()->with('success', "{$user->name}'s password is now {$temporaryPassword} (shown once — write it down).");
     }
 
     public function toggleUser(User $user): RedirectResponse

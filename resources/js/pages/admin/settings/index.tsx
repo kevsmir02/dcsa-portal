@@ -292,7 +292,9 @@ export default function SettingsIndex({ school, grading, schoolYears, transmutat
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base">Portal Accounts</CardTitle>
-                            <p className="text-muted-foreground text-xs">Resetting a password sets it back to "password".</p>
+                            <p className="text-muted-foreground text-xs">
+                                Resetting issues a new one-time password, shown once so you can hand it to the account holder.
+                            </p>
                         </CardHeader>
                         <CardContent className="px-0 pb-3">
                             <Table>

@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Models\Teacher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\Concerns\BuildsSchool;
 use Tests\TestCase;
 
@@ -44,6 +45,19 @@ class TeacherManagementTest extends TestCase
         $this->assertNotNull($teacher->user_id);
         $this->assertSame('teacher', $teacher->user->role->value);
         $this->assertSame('imelda.aquino@dcsa.test', $teacher->user->email);
+    }
+
+    public function test_a_new_teacher_gets_a_one_time_password_not_a_shared_default(): void
+    {
+        $response = $this->actingAs($this->admin)->post('/admin/teachers', $this->payload());
+
+        $teacher = Teacher::where('employee_no', 'T-9001')->firstOrFail();
+        $this->assertFalse(Hash::check('password', $teacher->user->password));
+
+        $flash = $response->getSession()->get('success');
+        preg_match('/([a-zA-Z346789]{4}-[a-zA-Z346789]{4})/', $flash, $matches);
+        $this->assertNotEmpty($matches, "The registrar needs to see the password once, got: {$flash}");
+        $this->assertTrue(Hash::check($matches[1], $teacher->user->password));
     }
 
     public function test_the_employee_number_and_email_must_be_unique(): void

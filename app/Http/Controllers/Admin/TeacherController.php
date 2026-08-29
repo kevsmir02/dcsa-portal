@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use App\Models\Semester;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Support\TemporaryPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -60,10 +61,12 @@ class TeacherController extends Controller
     {
         $data = $this->validated($request);
 
+        $temporaryPassword = TemporaryPassword::generate();
+
         $user = User::create([
             'name' => "{$data['first_name']} {$data['last_name']}",
             'email' => $data['email'],
-            'password' => Hash::make('password'),
+            'password' => Hash::make($temporaryPassword),
             'role' => 'teacher',
             'is_active' => true,
             'email_verified_at' => now(),
@@ -73,7 +76,7 @@ class TeacherController extends Controller
 
         ActivityLog::record('teacher.created', "New teacher added: {$teacher->full_name}", $teacher);
 
-        return back()->with('success', "{$teacher->full_name} has been added.");
+        return back()->with('success', "{$teacher->full_name} has been added. Sign-in: {$user->email} · temporary password: {$temporaryPassword} (shown once — write it down).");
     }
 
     public function update(Request $request, Teacher $teacher): RedirectResponse

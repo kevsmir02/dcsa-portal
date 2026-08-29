@@ -223,7 +223,9 @@ export default function TeachersIndex({ teachers, departments, filters }: Props)
                     <DialogHeader>
                         <DialogTitle>{editing ? 'Edit Teacher' : 'Add Teacher'}</DialogTitle>
                         <DialogDescription>
-                            {editing ? 'Update this faculty record.' : 'A portal login is created automatically with the password "password".'}
+                            {editing
+                                ? 'Update this faculty record.'
+                                : 'A portal login is created automatically. The one-time password is shown once after saving — write it down.'}
                         </DialogDescription>
                     </DialogHeader>
 

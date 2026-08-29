@@ -6,6 +6,7 @@ use App\Models\Enrollment;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\Concerns\BuildsSchool;
 use Tests\TestCase;
 
@@ -41,6 +42,31 @@ class StudentManagementTest extends TestCase
         $this->assertNotNull($student->user_id, 'The learner should be able to sign in and see their grades.');
         $this->assertSame('student', $student->user->role->value);
         $this->assertTrue($student->user->is_active);
+    }
+
+    public function test_a_new_learner_gets_a_one_time_password_not_a_shared_default(): void
+    {
+        $response = $this->actingAs($this->admin)->post('/admin/students', $this->studentPayload());
+
+        $student = Student::where('lrn', '123456789101')->firstOrFail();
+
+        $this->assertFalse(Hash::check('password', $student->user->password), 'Accounts must not share a guessable password.');
+
+        $flash = $response->getSession()->get('success');
+        preg_match('/([a-zA-Z346789]{4}-[a-zA-Z346789]{4})/', $flash, $matches);
+        $this->assertNotEmpty($matches, "The registrar needs to see the password once, got: {$flash}");
+        $this->assertTrue(Hash::check($matches[1], $student->user->password));
+    }
+
+    public function test_two_learners_never_share_a_password(): void
+    {
+        $this->actingAs($this->admin)->post('/admin/students', $this->studentPayload());
+        $this->actingAs($this->admin)->post('/admin/students', $this->studentPayload([
+            'lrn' => '123456789102', 'first_name' => 'Maria', 'last_name' => 'Santos',
+        ]));
+
+        $passwords = Student::with('user')->get()->pluck('user.password');
+        $this->assertCount(2, $passwords->unique());
     }
 
     public function test_choosing_a_section_enrols_the_learner_for_the_active_semester(): void

@@ -86,7 +86,9 @@ php artisan serve
 
 ## Sample accounts
 
-Seeded by `php artisan migrate --seed`. **Every account uses the password `password`.**
+Seeded by `php artisan migrate --seed`. **Every seeded account uses the password `password`.**
+These exist only to make the demo data usable — see the security note at the end
+before putting this anywhere real.
 
 | Role | Email | Sees |
 |---|---|---|
@@ -180,6 +182,18 @@ covers finalisation, and `PortalSmokeTest` opens every screen as each role.
 ## Notes
 
 - Accounts are issued by the registrar; public sign-up is disabled by design.
-- Reset a password from **Settings → Accounts** (it returns to `password`).
-- Change `APP_ENV=production` and `APP_DEBUG=false` before any real deployment,
-  and replace the seeded passwords.
+- Accounts created through the portal get a random one-time password, shown to the
+  registrar once at the top of the screen. Reset one from **Settings → Accounts**,
+  which issues a fresh one the same way.
+### Before deploying anywhere real
+
+- Set `APP_ENV=production` and `APP_DEBUG=false`.
+- **Do not run `db:seed` on a live install.** The seeded demo accounts all share
+  the password `password`, including `admin@dcsa.edu.ph`. Seed an empty database
+  with a real administrator instead, then add staff and learners through the portal
+  so each gets their own one-time password.
+- Sign-in addresses are derived from names (`first.last.id@dcsa.edu.ph`) and so are
+  guessable; the one-time passwords are what keep an account private. Ask people to
+  change theirs from **Settings → Password** after their first sign-in.
+- Replace the `compose.yaml` database credentials, which are development defaults
+  bound to `127.0.0.1`.

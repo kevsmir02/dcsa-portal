@@ -87,15 +87,26 @@ class SettingsManagementTest extends TestCase
         $this->assertDatabaseHas('activity_logs', ['action' => 'quarter.unlocked']);
     }
 
-    public function test_an_account_password_can_be_reset(): void
+    public function test_resetting_an_account_issues_a_one_time_password(): void
     {
         $user = User::factory()->teacher()->create(['password' => Hash::make('something-else')]);
+        $before = $user->password;
 
-        $this->actingAs($this->admin)
+        $response = $this->actingAs($this->admin)
             ->post("/admin/settings/users/{$user->id}/reset-password")
             ->assertRedirect();
 
-        $this->assertTrue(Hash::check('password', $user->fresh()->password));
+        $user->refresh();
+        $this->assertNotSame($before, $user->password, 'The password should actually change.');
+        $this->assertFalse(Hash::check('password', $user->password), 'It must not be reset to a guessable default.');
+        $this->assertFalse(Hash::check('something-else', $user->password));
+
+        // The registrar is shown the new password once so they can hand it over.
+        $flash = $response->getSession()->get('success');
+        preg_match('/([a-zA-Z346789]{4}-[a-zA-Z346789]{4})/', $flash, $matches);
+        $this->assertNotEmpty($matches, "The new password should appear in the notice, got: {$flash}");
+        $this->assertTrue(Hash::check($matches[1], $user->password));
+
         $this->assertDatabaseHas('activity_logs', ['action' => 'user.password_reset']);
     }
 

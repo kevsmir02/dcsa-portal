@@ -10,6 +10,7 @@ use App\Models\Semester;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\AcademicRecord;
+use App\Support\TemporaryPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -68,7 +69,7 @@ class StudentController extends Controller
         $data = $this->validated($request);
 
         $student = Student::create($data['student']);
-        $this->syncLogin($student);
+        $temporaryPassword = $this->syncLogin($student);
 
         if (! empty($data['section_id']) && $semester = Semester::active()) {
             Enrollment::updateOrCreate(
@@ -79,7 +80,8 @@ class StudentController extends Controller
 
         ActivityLog::record('student.created', "New student registered: {$student->full_name}", $student);
 
-        return to_route('admin.students.index')->with('success', "{$student->full_name} has been added.");
+        return to_route('admin.students.index')
+            ->with('success', $this->credentialsNotice("{$student->full_name} has been added.", $student, $temporaryPassword));
     }
 
     public function show(Student $student): Response
@@ -108,7 +110,7 @@ class StudentController extends Controller
         $data = $this->validated($request, $student);
 
         $student->update($data['student']);
-        $this->syncLogin($student);
+        $temporaryPassword = $this->syncLogin($student);
 
         if (! empty($data['section_id']) && $semester = Semester::active()) {
             Enrollment::updateOrCreate(
@@ -119,7 +121,8 @@ class StudentController extends Controller
 
         ActivityLog::record('student.updated', "Student record updated: {$student->full_name}", $student);
 
-        return to_route('admin.students.index')->with('success', "{$student->full_name} has been updated.");
+        return to_route('admin.students.index')
+            ->with('success', $this->credentialsNotice("{$student->full_name} has been updated.", $student, $temporaryPassword));
     }
 
     public function destroy(Student $student): RedirectResponse
@@ -160,26 +163,45 @@ class StudentController extends Controller
         return ['student' => $validated, 'section_id' => $sectionId];
     }
 
-    /** Every learner gets a portal login so they can see their own grades. */
-    private function syncLogin(Student $student): void
+    /**
+     * Every learner gets a portal login so they can see their own grades.
+     *
+     * Returns the one-time password when an account is created, so the caller
+     * can show it to the registrar once; null when the learner already had one.
+     */
+    private function syncLogin(Student $student): ?string
     {
         $email = Str::slug($student->first_name.'.'.$student->last_name.'.'.$student->id, '.').'@dcsa.edu.ph';
 
         if ($student->user) {
             $student->user->update(['name' => "{$student->first_name} {$student->last_name}"]);
 
-            return;
+            return null;
         }
+
+        $temporaryPassword = TemporaryPassword::generate();
 
         $user = User::create([
             'name' => "{$student->first_name} {$student->last_name}",
             'email' => $email,
-            'password' => Hash::make('password'),
+            'password' => Hash::make($temporaryPassword),
             'role' => 'student',
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
 
         $student->update(['user_id' => $user->id]);
+
+        return $temporaryPassword;
+    }
+
+    /** The registrar sees the new sign-in details exactly once. */
+    private function credentialsNotice(string $message, Student $student, ?string $temporaryPassword): string
+    {
+        if ($temporaryPassword === null) {
+            return $message;
+        }
+
+        return $message." Sign-in: {$student->fresh()->user->email} · temporary password: {$temporaryPassword} (shown once — write it down).";
     }
 }
