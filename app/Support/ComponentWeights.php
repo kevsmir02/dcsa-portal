@@ -43,6 +43,21 @@ final class ComponentWeights
             : new self(20, 60, 20);
     }
 
+    /**
+     * The DepEd defaults as a labelled table, for the screens that explain the
+     * scheme rather than apply it -- Settings and the public landing page.
+     *
+     * @return list<array{label: string, ww: int, pt: int, qa: int}>
+     */
+    public static function depedDefaults(): array
+    {
+        return [
+            ['label' => 'Core subjects, all tracks', 'ww' => 25, 'pt' => 50, 'qa' => 25],
+            ['label' => 'Academic track — applied & specialized', 'ww' => 25, 'pt' => 45, 'qa' => 30],
+            ['label' => 'TVL, Sports, Arts & Design — applied & specialized', 'ww' => 20, 'pt' => 60, 'qa' => 20],
+        ];
+    }
+
     public function total(): int
     {
         return $this->writtenWork + $this->performanceTask + $this->quarterlyAssessment;

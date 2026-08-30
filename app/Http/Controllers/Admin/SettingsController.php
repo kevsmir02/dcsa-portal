@@ -9,6 +9,7 @@ use App\Models\SchoolYear;
 use App\Models\Semester;
 use App\Models\Setting;
 use App\Models\User;
+use App\Support\ComponentWeights;
 use App\Support\TemporaryPassword;
 use App\Support\TransmutationTable;
 use Illuminate\Http\RedirectResponse;
@@ -30,11 +31,7 @@ class SettingsController extends Controller
             'transmutation' => collect(TransmutationTable::ranges())->map(fn (array $r) => [
                 'min' => $r[0], 'max' => $r[1], 'grade' => $r[2],
             ]),
-            'defaultWeights' => [
-                ['label' => 'Core subjects (all tracks)', 'ww' => 25, 'pt' => 50, 'qa' => 25],
-                ['label' => 'Academic track — applied & specialized', 'ww' => 25, 'pt' => 45, 'qa' => 30],
-                ['label' => 'TVL, Sports, Arts & Design — applied & specialized', 'ww' => 20, 'pt' => 60, 'qa' => 20],
-            ],
+            'defaultWeights' => ComponentWeights::depedDefaults(),
             'users' => User::orderBy('role')->orderBy('name')->paginate(10)->through(fn (User $user) => [
                 'id' => $user->id,
                 'name' => $user->name,

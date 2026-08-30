@@ -84,3 +84,11 @@ export interface ComponentWeights {
     performance_task: number;
     quarterly_assessment: number;
 }
+
+/** One row of the DepEd default weight table, as `ComponentWeights::depedDefaults()` sends it. */
+export interface WeightPreset {
+    label: string;
+    ww: number;
+    pt: number;
+    qa: number;
+}

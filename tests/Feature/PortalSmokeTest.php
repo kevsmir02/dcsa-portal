@@ -8,6 +8,7 @@ use App\Models\SubjectClass;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 /**
@@ -136,11 +137,23 @@ class PortalSmokeTest extends TestCase
             ->assertSee('Section Master List and Grade Sheet');
     }
 
-    public function test_guests_are_sent_to_the_sign_in_page(): void
+    public function test_guests_get_the_landing_page_and_are_sent_to_sign_in_everywhere_else(): void
     {
-        $this->get('/')->assertRedirect('/login');
+        $this->get('/')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('welcome')
+                ->has('defaultWeights', 3)
+                ->where('defaultWeights.0.ww', 25)
+            );
+
         $this->get('/dashboard')->assertRedirect('/login');
         $this->get('/admin/students')->assertRedirect('/login');
+    }
+
+    public function test_the_landing_page_sends_a_signed_in_user_to_their_dashboard(): void
+    {
+        $this->actingAs($this->admin())->get('/')->assertRedirect('/dashboard');
     }
 
     public function test_public_registration_is_closed(): void

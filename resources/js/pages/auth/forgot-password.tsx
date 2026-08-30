@@ -1,8 +1,8 @@
-// Components
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { Check, LoaderCircle, Mail, Send } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
+import { AuthNotice } from '@/components/auth-notice';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -22,42 +22,49 @@ export default function ForgotPassword({ status }: { status?: string }) {
     };
 
     return (
-        <AuthLayout title="Forgot password" description="Enter your email to receive a password reset link">
+        <AuthLayout
+            title="Forgot your password?"
+            description="Enter the email address on your portal account and we will send you a reset link."
+            footer={
+                <>
+                    Remembered it? <TextLink href={route('login')}>Back to sign in</TextLink>
+                </>
+            }
+        >
             <Head title="Forgot password" />
 
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
+            <form className="flex flex-col gap-4" onSubmit={submit}>
+                {status && (
+                    <AuthNotice icon={Check} tone="laurel">
+                        {status}
+                    </AuthNotice>
+                )}
 
-            <div className="space-y-6">
-                <form onSubmit={submit}>
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                <div className="grid gap-1.5">
+                    <Label htmlFor="email">Email address</Label>
+                    <div className="relative">
+                        <Mail className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                         <Input
                             id="email"
                             type="email"
                             name="email"
-                            autoComplete="off"
-                            value={data.email}
+                            required
                             autoFocus
+                            autoComplete="email"
+                            className="h-11 pl-9 lg:h-10"
+                            value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
+                            placeholder="you@dcsa.edu.ph"
                         />
-
-                        <InputError message={errors.email} />
                     </div>
-
-                    <div className="my-6 flex items-center justify-start">
-                        <Button className="w-full" disabled={processing}>
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Email password reset link
-                        </Button>
-                    </div>
-                </form>
-
-                <div className="text-muted-foreground space-x-1 text-center text-sm">
-                    <span>Or, return to</span>
-                    <TextLink href={route('login')}>log in</TextLink>
+                    <InputError message={errors.email} />
                 </div>
-            </div>
+
+                <Button type="submit" className="h-12 w-full gap-2 lg:h-11" disabled={processing}>
+                    {processing ? <LoaderCircle className="size-4 animate-spin" /> : <Send className="size-4" />}
+                    Email password reset link
+                </Button>
+            </form>
         </AuthLayout>
     );
 }

@@ -12,11 +12,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Reports\ReportController;
 use App\Http\Controllers\Student\MyGradesController;
 use App\Http\Controllers\Teacher\ClassController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => auth()->check()
-    ? redirect()->route('dashboard')
-    : redirect()->route('login'))->name('home');
+Route::get('/', WelcomeController::class)->name('home');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
