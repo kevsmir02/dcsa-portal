@@ -119,7 +119,11 @@ export default function SubjectsIndex({ subjects, strands, types, filters }: Pro
         // transform runs at send time, so it beats setData's async state update.
         form.transform((data) => (customWeights ? data : { ...data, ww_weight: '', pt_weight: '', qa_weight: '' }));
 
-        editing ? form.put(`/admin/subjects/${editing.id}`, options) : form.post('/admin/subjects', options);
+        if (editing) {
+            form.put(`/admin/subjects/${editing.id}`, options);
+        } else {
+            form.post('/admin/subjects', options);
+        }
     };
 
     return (

@@ -70,7 +70,11 @@ export default function StudentForm({ student, sections, currentSectionId }: Pro
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        editing ? put(`/admin/students/${student!.id}`) : post('/admin/students');
+        if (editing) {
+            put(`/admin/students/${student!.id}`);
+        } else {
+            post('/admin/students');
+        }
     };
 
     return (

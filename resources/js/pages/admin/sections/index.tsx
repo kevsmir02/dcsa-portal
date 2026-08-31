@@ -91,7 +91,11 @@ export default function SectionsIndex({ sections, strands, teachers, filters }: 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         const options = { preserveScroll: true, onSuccess: () => setOpen(false) };
-        editing ? form.put(`/admin/sections/${editing.id}`, options) : form.post('/admin/sections', options);
+        if (editing) {
+            form.put(`/admin/sections/${editing.id}`, options);
+        } else {
+            form.post('/admin/sections', options);
+        }
     };
 
     return (

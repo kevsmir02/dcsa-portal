@@ -100,7 +100,11 @@ export default function TeachersIndex({ teachers, departments, filters }: Props)
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         const options = { preserveScroll: true, onSuccess: () => setOpen(false) };
-        editing ? form.put(`/admin/teachers/${editing.id}`, options) : form.post('/admin/teachers', options);
+        if (editing) {
+            form.put(`/admin/teachers/${editing.id}`, options);
+        } else {
+            form.post('/admin/teachers', options);
+        }
     };
 
     return (
