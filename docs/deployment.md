@@ -8,6 +8,7 @@ when something goes wrong you have some idea where to look.
 
 **Set aside about 45 minutes the first time.** Most of that is downloads.
 
+- [Quick demo with Docker](#quick-demo-with-docker) — just to try it, nothing to configure
 - [What you are about to install, and why](#what-you-are-about-to-install-and-why)
 - [Windows 11](#windows-11)
   - [Path A — Laragon (recommended)](#path-a--laragon-recommended)
@@ -20,6 +21,54 @@ when something goes wrong you have some idea where to look.
 - [Running the tests](#running-the-tests)
 - [Password-reset email](#password-reset-email)
 - [Going to production](#going-to-production)
+
+---
+
+## Quick demo with Docker
+
+If you only want to **use** the portal — a demo, a look around — and not work on the
+code, skip everything below. You need just one program.
+
+**1.** Install **Docker Desktop** from <https://www.docker.com/products/docker-desktop/>,
+accept its defaults, and restart the PC when it asks.
+
+**2.** Double-click **`start.bat`**. You can get it either way:
+
+- Download [`start.bat`](https://github.com/kevsmir02/dcsa-portal/raw/main/start.bat)
+  on its own (right-click → *Save link as*). It fetches the latest version of the portal
+  itself, into `%LOCALAPPDATA%\dcsa-portal-demo`, every time it runs.
+- Or download the whole project (**Code → Download ZIP** on GitHub), unzip it, and
+  double-click the `start.bat` inside.
+
+The script starts Docker Desktop if needed, builds the portal, creates the demo school,
+and opens <http://localhost:8000> in the browser. The first run takes several minutes;
+after that it is under a minute. The window lists the [sample logins](../README.md#sample-logins).
+
+Keep that window open while you use the portal, and press any key in it to shut the
+portal down. The demo data is kept between runs.
+
+<details>
+<summary><b>What it does, and how to reset it</b></summary>
+
+`start.bat` runs `docker compose --profile demo up -d --build --wait`. The `demo`
+profile in `compose.yaml` adds an `app` service, built from the `Dockerfile`, next to
+the usual MariaDB. On its first start the container generates an app key, runs the
+migrations and seeds the demo school (`docker/entrypoint.sh`); after that it only runs
+new migrations. PHP, Composer and Node exist only inside the image.
+
+- **Start over with fresh demo data:** from the project folder,
+  `docker compose --profile demo down -v`, then run `start.bat` again.
+- **Password-reset emails** are written to the log rather than sent:
+  `docker compose logs app`.
+- **Windows asks about "Windows protected your PC"** when opening a downloaded `.bat` —
+  click *More info → Run anyway*.
+- **Port 8000 already in use** — something else on the PC is using it; close it and try
+  again.
+
+Because it rebuilds from whatever code it has, this is not the setup to develop in —
+edits need a rebuild to show up. For that, use one of the paths below.
+
+</details>
 
 ---
 

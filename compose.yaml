@@ -1,7 +1,7 @@
-# Local development database.
+# Local development database, plus an optional all-in-one demo.
 #
-# The app itself runs natively (`composer run dev`); only MySQL lives in a
-# container, so no root password is needed on the host machine.
+# For development the app runs natively (`composer run dev`); only MySQL lives
+# in a container, so no root password is needed on the host machine.
 #
 #   docker compose up -d      start it
 #   docker compose down       stop it (data is kept in the named volume)
@@ -9,6 +9,12 @@
 #
 # It listens on 3307 so it cannot collide with a MySQL/MariaDB already
 # installed on the host. Match DB_PORT in .env to the left-hand port here.
+#
+# The `demo` profile also builds and runs the portal itself, for a machine
+# with nothing but Docker installed (start.bat wraps this for Windows):
+#
+#   docker compose --profile demo up -d --build --wait    start it on :8000
+#   docker compose --profile demo down                    stop it
 
 name: dcsa-portal
 
@@ -36,5 +42,42 @@ services:
             retries: 20
             start_period: 20s
 
+    app:
+        profiles: [demo]
+        build: .
+        image: dcsa-portal-demo
+        container_name: dcsa-app
+        depends_on:
+            mysql:
+                condition: service_healthy
+        environment:
+            APP_NAME: DCSA Portal
+            APP_ENV: local
+            APP_DEBUG: 'true'
+            APP_URL: http://localhost:8000
+            DB_CONNECTION: mysql
+            DB_HOST: mysql
+            DB_PORT: 3306
+            DB_DATABASE: dcsa_portal
+            DB_USERNAME: dcsa
+            DB_PASSWORD: dcsa_secret
+            # Logs, including password-reset links, show in `docker compose logs app`.
+            LOG_CHANNEL: stderr
+            # No queue worker runs in the demo, so jobs run inline.
+            QUEUE_CONNECTION: sync
+            MAIL_MAILER: log
+        ports:
+            - '127.0.0.1:8000:8000'
+        volumes:
+            - dcsa-app-data:/data
+        healthcheck:
+            test: ['CMD', 'php', '-r', "exit(@file_get_contents('http://127.0.0.1:8000/up') === false ? 1 : 0);"]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+            # The first start migrates and seeds the demo school before serving.
+            start_period: 180s
+
 volumes:
     dcsa-mysql-data:
+    dcsa-app-data:

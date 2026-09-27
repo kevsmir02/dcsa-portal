@@ -8,6 +8,7 @@ DepEd grades and printable report cards.
 
 | | |
 |---|---|
+| ▶️ **Just try it** | Install Docker Desktop and double-click `start.bat` — [details](docs/deployment.md#quick-demo-with-docker) |
 | 📦 **Set it up** | **[docs/deployment.md](docs/deployment.md)** — step by step, for Windows 11 |
 | 🏗 **Understand the code** | **[docs/architecture.md](docs/architecture.md)** — how it is built and why |
 
@@ -91,7 +92,7 @@ If you are new to this stack, here is what every tool is actually doing.
 | **Pint** | Formatting PHP to one consistent style |
 | **ESLint + Prettier** | Linting and formatting the frontend |
 | **Resend** | Sending password-reset email (optional — logs to a file by default) |
-| **Docker Compose** | Running the dev database in a container, so you need no MySQL root password |
+| **Docker Compose** | Running the dev database in a container, so you need no MySQL root password — and, with the `demo` profile, the whole portal for a quick demo |
 | **GitHub Actions** | Running the tests and linters on every push |
 
 ---
