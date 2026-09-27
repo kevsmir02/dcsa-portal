@@ -9,4 +9,6 @@
 CHANGELOG.md export-ignore
 README.md export-ignore
 
-*.bat text eol=crlf
+# Stored with CRLF as-is, so the raw GitHub download is CRLF too -- cmd.exe
+# can misread labels in a batch file with bare LF line endings.
+*.bat -text
